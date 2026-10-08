@@ -17,6 +17,21 @@
 
   }
 
+   @if (isAdmin) {
+
+    <a routerLink="/staffing-requirements">
+    Staffing Requirements
+    </a>
+
+    <a routerLink="/schedule">
+    Schedule
+    </a>
+
+    <a routerLink="/agents">
+    Agents
+    </a>
+  }
+
   @if (isLoggedIn) {
 
     <a routerLink="/profile">

@@ -16,6 +16,16 @@ export class Navbar {
     return !!localStorage.getItem('token');
   }
 
+  get user(): any {
+    const user = localStorage.getItem('user');
+
+    return user ? JSON.parse(user) : null;
+  }
+
+  get isAdmin(): boolean {
+    return this.user?.role === 'Admin';
+  }
+
   logout(): void {
 
     localStorage.removeItem('token');
@@ -25,7 +35,8 @@ export class Navbar {
       icon: 'success',
       title: 'Logged Out',
       timer: 1500,
-      showConfirmButton: false
+      showConfirmButton: false,
+      timerProgressBar: true
     }).then(() => {
 
       this.router.navigate(['/login']);
