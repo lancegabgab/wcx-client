@@ -57,7 +57,7 @@ export class AuthService {
   ): Observable<Response<UserOutput>> {
 
     return this.http.post<Response<UserOutput>>(
-      `${this.apiUrl}/auth/register`,
+      `${this.apiUrl}/Auth/register`,
       input
     );
   }
@@ -67,7 +67,7 @@ export class AuthService {
   ): Observable<Response<LoginOutput>> {
 
     return this.http.post<Response<LoginOutput>>(
-      `${this.apiUrl}/auth/login`,
+      `${this.apiUrl}/Auth/login`,
       input
     );
   }
