@@ -2,7 +2,33 @@
   <a routerLink="/" class="brand">
     WFM Planner
   </a>
+  
   <a routerLink="/">Home</a>
-  <a routerLink="/login">Login</a>
-  <a routerLink="/register">Register</a>
+
+    @if (!isLoggedIn) {
+
+    <a routerLink="/login">
+      Login
+    </a>
+
+    <a routerLink="/register">
+      Register
+    </a>
+
+  }
+
+  @if (isLoggedIn) {
+
+    <a routerLink="/profile">
+      Profile
+    </a>
+
+    <a
+      href="javascript:void(0)"
+      (click)="logout()"
+    >
+      Logout
+    </a>
+
+  }
 </nav>
