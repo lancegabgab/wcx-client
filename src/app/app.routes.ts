@@ -4,11 +4,16 @@ import { Login } from './pages/login/login';
 import { Register } from './pages/register/register';
 import { Profile } from './pages/profile/profile';
 import { Agents } from './pages/agents/agents';
+import { Staffing } from './pages/staffing/staffing';
 
 export const routes: Routes = [
     {
         path: '',
         component: Home
+    },
+    {
+        path: 'staffing-requirements',
+        component: Staffing
     },
     {
         path: 'agents',
