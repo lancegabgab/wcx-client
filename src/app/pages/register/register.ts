@@ -2,9 +2,9 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
-  selector: 'app-navbar',
+  selector: 'app-register',
   imports: [RouterLink],
-  templateUrl: './navbar.html',
-  styleUrl: './navbar.css',
+  templateUrl: './register.html',
+  styleUrl: './register.css',
 })
-export class Navbar {}
+export class Register {}
