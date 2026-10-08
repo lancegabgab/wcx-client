@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, afterNextRender, inject, ChangeDetectorRef } from '@angular/core';
 import { DatePipe } from '@angular/common';
 
 import {
@@ -12,25 +12,43 @@ import {
   templateUrl: './agents.html',
   styleUrl: './agents.css',
 })
-export class Agents implements OnInit {
+export class Agents {
 
   private userService = inject(UserService);
+  private cdr = inject(ChangeDetectorRef);
 
   agents: UserOutput[] = [];
 
-  ngOnInit(): void {
-    this.loadAgents();
+  constructor() {
+
+    afterNextRender(() => {
+      this.loadAgents();
+    });
+
   }
 
   loadAgents(): void {
+
     this.userService.getAgents().subscribe({
+
       next: (response) => {
+
         this.agents = response;
+
         console.log('Agents:', this.agents);
+
+        this.cdr.detectChanges();
+
       },
+
       error: (error) => {
+
         console.error('Failed to load agents:', error);
+
       }
+
     });
+
   }
+
 }
