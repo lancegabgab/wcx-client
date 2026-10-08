@@ -1,0 +1,51 @@
+:host {
+  display: block;
+}
+
+.navbar {
+  background-color: #1565c0;
+  color: white;
+
+  padding: 10px 32px;
+  min-height: 64px;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.navbar .brand {
+  color: white;
+  font-weight: 600;
+  font-size: 17px;
+  padding-right: 24px;
+}
+
+.navbar a {
+  color: white;
+  text-decoration: none;
+  padding: 11px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.navbar a:hover {
+  color: white;
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.navbar a.on {
+  background-color: #0d47a1;
+  color: white;
+}
+
+.navbar .user {
+  margin-left: auto;
+  font-size: 13px;
+  color: white;
+}
+
+.navbar .user b {
+  color: white;
+}
