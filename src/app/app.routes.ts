@@ -5,6 +5,7 @@ import { Register } from './pages/register/register';
 import { Profile } from './pages/profile/profile';
 import { Agents } from './pages/agents/agents';
 import { Staffing } from './pages/staffing/staffing';
+import { Overview } from './pages/overview/overview';
 
 export const routes: Routes = [
     {
@@ -12,7 +13,11 @@ export const routes: Routes = [
         component: Home
     },
     {
-        path: 'staffing-requirements',
+        path: 'overview',
+        component: Overview
+    },
+    {
+        path: 'requirements',
         component: Staffing
     },
     {
