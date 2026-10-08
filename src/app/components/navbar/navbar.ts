@@ -1,46 +1,59 @@
 import { Component, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { PLATFORM_ID } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-navbar',
-  imports: [RouterLink],
+  imports: [
+    RouterLink
+  ],
   templateUrl: './navbar.html',
-  styleUrl: './navbar.css',
+  styleUrl: './navbar.css'
 })
 export class Navbar {
 
+  private platformId = inject(PLATFORM_ID);
   private router = inject(Router);
 
   get isLoggedIn(): boolean {
+
+    if (!isPlatformBrowser(this.platformId)) {
+      return false;
+    }
+
     return !!localStorage.getItem('token');
   }
 
-  get user(): any {
+  get isAdmin(): boolean {
+
+    if (!isPlatformBrowser(this.platformId)) {
+      return false;
+    }
+
     const user = localStorage.getItem('user');
 
-    return user ? JSON.parse(user) : null;
-  }
+    if (!user) {
+      return false;
+    }
 
-  get isAdmin(): boolean {
-    return this.user?.role === 'Admin';
+    try {
+      const userData = JSON.parse(user);
+
+      return userData.role === 'Admin';
+
+    } catch {
+      return false;
+    }
   }
 
   logout(): void {
 
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
 
-    Swal.fire({
-      icon: 'success',
-      title: 'Logged Out',
-      timer: 1500,
-      showConfirmButton: false,
-      timerProgressBar: true
-    }).then(() => {
-
-      this.router.navigate(['/login']);
-
-    });
+    this.router.navigate(['/login']);
   }
 }
