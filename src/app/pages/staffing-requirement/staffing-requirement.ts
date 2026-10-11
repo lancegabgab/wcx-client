@@ -54,6 +54,26 @@ export class StaffingRequirementComponent {
   editingId: number | null = null;
   originalRow: StaffingRow | null = null;
 
+  addRequirement(): void {
+    const newId = Math.max(
+      0,
+      ...this.staffingRequirements.map(item => item.id)
+    ) + 1;
+
+    const newRequirement: StaffingRow = {
+      id: newId,
+      date: new Date().toISOString().split('T')[0],
+      startTime: '09:00',
+      endTime: '10:00',
+      requiredAgents: 1,
+      scheduledAgents: 0,
+      gap: -1
+    };
+
+    this.staffingRequirements.unshift(newRequirement);
+    this.editRequirement(newRequirement);
+  }
+
   editRequirement(item: StaffingRow): void {
     this.originalRow = { ...item };
     this.editingId = item.id;

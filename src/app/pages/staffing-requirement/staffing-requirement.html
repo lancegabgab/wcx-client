@@ -6,8 +6,15 @@
         View and manage staffing requirements
       </p>
     </div>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="addRequirement()"
+      [disabled]="editingId !== null"
+    >
+      <span class="me-1">+</span> New
+    </button>
   </div>
-
   <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
       <div class="table-responsive">
