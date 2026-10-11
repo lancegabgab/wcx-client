@@ -1,16 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-interface StaffingRow {
-  id: number;
-  date: string;
-  startTime: string;
-  endTime: string;
-  requiredAgents: number;
-  scheduledAgents: number;
-  gap: number;
-}
+import {
+  StaffingRequirementService,
+  StaffingRequirement as StaffingRequirementModel,
+  StaffingRequirementInput
+} from '../../services/staffing-requirement';
 
 @Component({
   selector: 'app-staffing-requirement',
@@ -19,38 +15,12 @@ interface StaffingRow {
   templateUrl: './staffing-requirement.html',
   styleUrl: './staffing-requirement.css'
 })
-export class StaffingRequirement {
-  staffingRequirements: StaffingRow[] = [
-    {
-      id: 1,
-      date: '2026-10-05',
-      startTime: '09:00',
-      endTime: '09:59',
-      requiredAgents: 10,
-      scheduledAgents: 8,
-      gap: -2
-    },
-    {
-      id: 2,
-      date: '2026-10-05',
-      startTime: '10:00',
-      endTime: '10:59',
-      requiredAgents: 12,
-      scheduledAgents: 12,
-      gap: 0
-    },
-    {
-      id: 3,
-      date: '2026-10-05',
-      startTime: '11:00',
-      endTime: '11:59',
-      requiredAgents: 15,
-      scheduledAgents: 16,
-      gap: 1
-    }
-  ];
 
-  filteredStaffingRequirements: StaffingRow[] = [];
+export class StaffingRequirement implements OnInit {
+  private staffingService = inject(StaffingRequirementService);
+
+  staffingRequirements: StaffingRequirementModel[] = [];
+  filteredStaffingRequirements: StaffingRequirementModel[] = [];
 
   dateFrom = '';
   dateTo = '';
@@ -58,12 +28,50 @@ export class StaffingRequirement {
   timeTo = '';
 
   filterError = '';
+  errorMessage = '';
+
+  isLoading = false;
+  isSaving = false;
+  isDeleting = false;
 
   editingId: number | null = null;
-  originalRow: StaffingRow | null = null;
+  originalRow: StaffingRequirementModel | null = null;
+  isNewRow = false;
 
-  constructor() {
-    this.applyFilters();
+  ngOnInit(): void {
+    this.loadRequirements();
+  }
+
+  loadRequirements(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.staffingService.getAll().subscribe({
+      next: (response) => {
+        if (!response.success || !response.data) {
+          this.errorMessage =
+            response.message || 'Failed to load staffing requirements.';
+          this.isLoading = false;
+          return;
+        }
+
+        this.staffingRequirements = response.data.map(item => ({
+          ...item,
+          date: String(item.date).substring(0, 10),
+          startTime: String(item.startTime).substring(0, 5),
+          endTime: String(item.endTime).substring(0, 5)
+        }));
+
+        this.applyFilters();
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error(error);
+        this.errorMessage =
+          error.error?.message ?? 'Failed to load staffing requirements.';
+        this.isLoading = false;
+      }
+    });
   }
 
   applyFilters(): void {
@@ -71,29 +79,37 @@ export class StaffingRequirement {
 
     if (this.dateFrom && this.dateTo && this.dateFrom > this.dateTo) {
       this.filterError = 'Date From cannot be later than Date To.';
+      this.filteredStaffingRequirements = [];
       return;
     }
 
     if (this.timeFrom && this.timeTo && this.timeFrom >= this.timeTo) {
       this.filterError = 'Time From must be earlier than Time To.';
+      this.filteredStaffingRequirements = [];
       return;
     }
 
-    this.filteredStaffingRequirements = this.staffingRequirements.filter(item => {
-      const matchesDateFrom = !this.dateFrom || item.date >= this.dateFrom;
-      const matchesDateTo = !this.dateTo || item.date <= this.dateTo;
+    this.filteredStaffingRequirements =
+      this.staffingRequirements.filter(item => {
+        const matchesDateFrom =
+          !this.dateFrom || item.date >= this.dateFrom;
 
-      // Match time periods that overlap the selected time range.
-      const matchesTimeFrom = !this.timeFrom || item.endTime > this.timeFrom;
-      const matchesTimeTo = !this.timeTo || item.startTime < this.timeTo;
+        const matchesDateTo =
+          !this.dateTo || item.date <= this.dateTo;
 
-      return (
-        matchesDateFrom &&
-        matchesDateTo &&
-        matchesTimeFrom &&
-        matchesTimeTo
-      );
-    });
+        const matchesTimeFrom =
+          !this.timeFrom || item.endTime > this.timeFrom;
+
+        const matchesTimeTo =
+          !this.timeTo || item.startTime < this.timeTo;
+
+        return (
+          matchesDateFrom &&
+          matchesDateTo &&
+          matchesTimeFrom &&
+          matchesTimeTo
+        );
+      });
   }
 
   resetFilters(): void {
@@ -101,92 +117,188 @@ export class StaffingRequirement {
     this.dateTo = '';
     this.timeFrom = '';
     this.timeTo = '';
-    this.filterError = '';
     this.applyFilters();
   }
 
   addRequirement(): void {
-    const newId = Math.max(
-      0,
-      ...this.staffingRequirements.map(item => item.id)
-    ) + 1;
+    if (this.editingId !== null || this.isLoading || this.isSaving) {
+      return;
+    }
 
-    const newRequirement: StaffingRow = {
-      id: newId,
-      date: new Date().toISOString().split('T')[0],
+    const today = new Date();
+
+    const localDate = [
+      today.getFullYear(),
+      String(today.getMonth() + 1).padStart(2, '0'),
+      String(today.getDate()).padStart(2, '0')
+    ].join('-');
+
+    const newRequirement: StaffingRequirementModel = {
+      id: 0,
+      date: localDate,
       startTime: '09:00',
       endTime: '10:00',
       requiredAgents: 1,
-      scheduledAgents: 0,
-      gap: -1
+      scheduledAgents: 0
     };
 
     this.staffingRequirements.unshift(newRequirement);
-    this.applyFilters();
-    this.editRequirement(newRequirement);
+    this.originalRow = { ...newRequirement };
+    this.editingId = 0;
+    this.isNewRow = true;
+
+    this.filteredStaffingRequirements = [
+      newRequirement,
+      ...this.filteredStaffingRequirements.filter(
+        item => item !== newRequirement
+      )
+    ];
   }
 
-  editRequirement(item: StaffingRow): void {
+  editRequirement(item: StaffingRequirementModel): void {
+    if (this.editingId !== null || this.isSaving) {
+      return;
+    }
+
     this.originalRow = { ...item };
     this.editingId = item.id;
+    this.isNewRow = false;
   }
 
-  saveRequirement(item: StaffingRow): void {
+  saveRequirement(item: StaffingRequirementModel): void {
+    if (this.isSaving) {
+      return;
+    }
+
     if (!item.date || !item.startTime || !item.endTime) {
-      alert('Please complete the date and time fields.');
+      this.errorMessage = 'Please complete the date and time fields.';
       return;
     }
 
     if (item.endTime <= item.startTime) {
-      alert('End Time must be later than Start Time.');
+      this.errorMessage = 'End Time must be later than Start Time.';
       return;
     }
 
-    if (
-      item.requiredAgents < 0 ||
-      !Number.isInteger(item.requiredAgents)
-    ) {
-      alert('Required Agents must be a non-negative whole number.');
+    const requiredAgents = Number(item.requiredAgents);
+
+    if (!Number.isInteger(requiredAgents) || requiredAgents < 1) {
+      this.errorMessage =
+        'Required Agents must be a positive whole number.';
       return;
     }
 
-    item.gap = item.scheduledAgents - item.requiredAgents;
+    const input: StaffingRequirementInput = {
+      date: item.date,
+      startTime: `${item.startTime}:00`,
+      endTime: `${item.endTime}:00`,
+      requiredAgents
+    };
 
-    this.editingId = null;
-    this.originalRow = null;
+    this.errorMessage = '';
+    this.isSaving = true;
 
-    this.applyFilters();
+    const request = this.isNewRow
+      ? this.staffingService.create(input)
+      : this.staffingService.update(item.id, input);
+
+    request.subscribe({
+      next: (response) => {
+        if (!response.success) {
+          this.errorMessage =
+            response.message || 'Failed to save staffing requirement.';
+          this.isSaving = false;
+          return;
+        }
+
+        this.editingId = null;
+        this.originalRow = null;
+        this.isNewRow = false;
+        this.isSaving = false;
+
+        // Reload to get the latest ScheduledAgents and Gap.
+        this.loadRequirements();
+      },
+      error: (error) => {
+        console.error(error);
+        this.errorMessage =
+          error.error?.message ?? 'Failed to save staffing requirement.';
+        this.isSaving = false;
+      }
+    });
   }
 
-  cancelEdit(item: StaffingRow): void {
-    if (this.originalRow) {
+  cancelEdit(item: StaffingRequirementModel): void {
+    if (this.isSaving) {
+      return;
+    }
+
+    if (this.isNewRow) {
+      this.staffingRequirements =
+        this.staffingRequirements.filter(row => row !== item);
+    } else if (this.originalRow) {
       Object.assign(item, this.originalRow);
     }
 
     this.editingId = null;
     this.originalRow = null;
+    this.isNewRow = false;
 
     this.applyFilters();
   }
 
   deleteRequirement(id: number): void {
-    const confirmed = confirm(
-      'Are you sure you want to delete this staffing requirement?'
-    );
-
-    if (!confirmed) {
+    if (
+      this.editingId !== null ||
+      this.isDeleting ||
+      this.isLoading
+    ) {
       return;
     }
 
-    this.staffingRequirements = this.staffingRequirements.filter(
-      item => item.id !== id
-    );
-
-    if (this.editingId === id) {
-      this.editingId = null;
-      this.originalRow = null;
+    if (!confirm('Are you sure you want to delete this staffing requirement?')) {
+      return;
     }
 
-    this.applyFilters();
+    this.errorMessage = '';
+    this.isDeleting = true;
+
+    this.staffingService.delete(id).subscribe({
+      next: (response) => {
+        if (!response.success) {
+          this.errorMessage =
+            response.message || 'Failed to delete staffing requirement.';
+          this.isDeleting = false;
+          return;
+        }
+
+        this.isDeleting = false;
+        this.loadRequirements();
+      },
+      error: (error) => {
+        console.error(error);
+        this.errorMessage =
+          error.error?.message ?? 'Failed to delete staffing requirement.';
+        this.isDeleting = false;
+      }
+    });
+  }
+
+  getGap(item: StaffingRequirementModel): number {
+    return item.scheduledAgents - item.requiredAgents;
+  }
+
+  getStatus(item: StaffingRequirementModel): string {
+  const gap = this.getGap(item);
+
+    if (gap < 0) {
+      return 'Understaffed';
+    }
+
+    if (gap === 0) {
+      return 'Complete';
+    }
+
+    return 'Overstaffed';
   }
 }

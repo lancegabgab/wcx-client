@@ -108,6 +108,7 @@
               <th>Required Agents</th>
               <th>Scheduled Agents</th>
               <th>Gap</th>
+              <th>Staffing Status</th>
               <th class="text-center">Actions</th>
             </tr>
           </thead>
@@ -181,19 +182,32 @@
               </td>
 
               <td>{{ item.scheduledAgents }}</td>
-
+              
               <td>
-                <span
-                  class="badge rounded-pill"
-                  [ngClass]="{
-                    'text-bg-danger': item.gap < 0,
-                    'text-bg-success': item.gap === 0,
-                    'text-bg-primary': item.gap > 0
-                  }"
-                >
-                  {{ item.gap > 0 ? '+' + item.gap : item.gap }}
-                </span>
-              </td>
+              <span
+                class="badge rounded-pill"
+                [ngClass]="{
+                  'text-bg-danger': getGap(item) < 0,
+                  'text-bg-success': getGap(item) === 0,
+                  'text-bg-primary': getGap(item) > 0
+                }"
+              >
+                {{ getGap(item) > 0 ? '+' + getGap(item) : getGap(item) }}
+              </span>
+            </td>
+
+            <td>
+              <span
+                class="badge rounded-pill"
+                [ngClass]="{
+                  'text-bg-success': getStatus(item) === 'Complete',
+                  'text-bg-warning': getStatus(item) === 'Understaffed',
+                  'text-bg-primary': getStatus(item) === 'Overstaffed'
+                }"
+              >
+                {{ getStatus(item) }}
+              </span>
+            </td>
 
               <td class="text-center">
                 <div class="d-flex justify-content-center gap-2">
