@@ -1,0 +1,156 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">Staffing Forecast Overview</h2>
+      <p class="text-secondary mb-0">
+        View and manage staffing requirements
+      </p>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Date</th>
+              <th>Start Time</th>
+              <th>End Time</th>
+              <th>Required Agents</th>
+              <th>Scheduled Agents</th>
+              <th>Gap</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let item of staffingRequirements">
+              <td>
+                <ng-container *ngIf="editingId === item.id; else dateDisplay">
+                  <input
+                    type="date"
+                    class="form-control form-control-sm"
+                    [(ngModel)]="item.date"
+                    required
+                  />
+                </ng-container>
+                <ng-template #dateDisplay>
+                  {{ item.date | date:'MMM d, y' }}
+                </ng-template>
+              </td>
+
+              <td>
+                <ng-container *ngIf="editingId === item.id; else startDisplay">
+                  <input
+                    type="time"
+                    class="form-control form-control-sm time-input"
+                    [(ngModel)]="item.startTime"
+                    required
+                  />
+                </ng-container>
+                <ng-template #startDisplay>
+                  {{ item.startTime }}
+                </ng-template>
+              </td>
+
+              <td>
+                <ng-container *ngIf="editingId === item.id; else endDisplay">
+                  <input
+                    type="time"
+                    class="form-control form-control-sm time-input"
+                    [(ngModel)]="item.endTime"
+                    [min]="item.startTime"
+                    required
+                  />
+                </ng-container>
+                <ng-template #endDisplay>
+                  {{ item.endTime }}
+                </ng-template>
+              </td>
+
+              <td>
+                <ng-container *ngIf="editingId === item.id; else requiredDisplay">
+                  <input
+                    type="number"
+                    class="form-control form-control-sm agents-input"
+                    [(ngModel)]="item.requiredAgents"
+                    min="0"
+                    step="1"
+                    required
+                  />
+                </ng-container>
+                <ng-template #requiredDisplay>
+                  <span class="fw-semibold">{{ item.requiredAgents }}</span>
+                </ng-template>
+              </td>
+
+              <td>{{ item.scheduledAgents }}</td>
+
+              <td>
+                <span
+                  class="badge rounded-pill"
+                  [ngClass]="{
+                    'text-bg-danger': item.gap < 0,
+                    'text-bg-success': item.gap === 0,
+                    'text-bg-primary': item.gap > 0
+                  }"
+                >
+                  {{ item.gap > 0 ? '+' + item.gap : item.gap }}
+                </span>
+              </td>
+
+              <td class="text-center">
+                <div class="d-flex justify-content-center gap-2">
+                  <ng-container *ngIf="editingId === item.id; else actionButtons">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-success"
+                      (click)="saveRequirement(item)"
+                    >
+                      Save
+                    </button>
+
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary"
+                      (click)="cancelEdit(item)"
+                    >
+                      Cancel
+                    </button>
+                  </ng-container>
+
+                  <ng-template #actionButtons>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-primary"
+                      (click)="editRequirement(item)"
+                      [disabled]="editingId !== null"
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-danger"
+                      (click)="deleteRequirement(item.id)"
+                      [disabled]="editingId !== null"
+                    >
+                      Delete
+                    </button>
+                  </ng-template>
+                </div>
+              </td>
+            </tr>
+
+            <tr *ngIf="staffingRequirements.length === 0">
+              <td colspan="7" class="text-center text-secondary py-5">
+                No staffing requirements available.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
