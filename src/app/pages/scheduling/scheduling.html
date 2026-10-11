@@ -1,0 +1,187 @@
+<div class="container-fluid py-4">
+  <!-- Page Header -->
+  <div class="mb-4">
+    <h2 class="fw-bold mb-1">Agent Scheduling</h2>
+    <p class="text-secondary mb-0">
+      Create and manage agent work schedules
+    </p>
+  </div>
+
+  <!-- Schedule Form -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+      <h5 class="fw-semibold mb-0">
+        {{ editingId !== null ? 'Edit Schedule' : 'Create Schedule' }}
+      </h5>
+    </div>
+
+    <div class="card-body">
+      <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+        {{ errorMessage }}
+      </div>
+
+      <div *ngIf="successMessage" class="alert alert-success" role="alert">
+        {{ successMessage }}
+      </div>
+
+      <form #scheduleForm="ngForm" (ngSubmit)="submitSchedule()">
+        <div class="row g-3">
+          <!-- Agent -->
+          <div class="col-md-6 col-lg-3">
+            <label for="agentId" class="form-label fw-semibold">
+              Agent
+            </label>
+
+            <select
+              id="agentId"
+              name="agentId"
+              class="form-select"
+              [(ngModel)]="form.agentId"
+              required
+            >
+              <option value="" disabled>Select an agent</option>
+
+              <option *ngFor="let agent of agents" [value]="agent.id">
+                {{ agent.name }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Date -->
+          <div class="col-md-6 col-lg-3">
+            <label for="date" class="form-label fw-semibold">
+              Date
+            </label>
+
+            <input
+              id="date"
+              name="date"
+              type="date"
+              class="form-control"
+              [(ngModel)]="form.date"
+              required
+            />
+          </div>
+
+          <!-- Start Time -->
+          <div class="col-md-6 col-lg-3">
+            <label for="startTime" class="form-label fw-semibold">
+              Start Time
+            </label>
+
+            <input
+              id="startTime"
+              name="startTime"
+              type="time"
+              class="form-control"
+              [(ngModel)]="form.startTime"
+              [max]="form.endTime"
+              required
+            />
+          </div>
+
+          <!-- End Time -->
+          <div class="col-md-6 col-lg-3">
+            <label for="endTime" class="form-label fw-semibold">
+              End Time
+            </label>
+
+            <input
+              id="endTime"
+              name="endTime"
+              type="time"
+              class="form-control"
+              [(ngModel)]="form.endTime"
+              [min]="form.startTime"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="!scheduleForm.valid"
+          >
+            {{ editingId !== null ? 'Save Changes' : 'Add Schedule' }}
+          </button>
+
+          <button
+            *ngIf="editingId !== null"
+            type="button"
+            class="btn btn-outline-secondary"
+            (click)="cancelEdit()"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Schedule Table -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3">
+      <h5 class="fw-semibold mb-0">Schedule List</h5>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Agent</th>
+              <th>Date</th>
+              <th>Start Time</th>
+              <th>End Time</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let schedule of schedules">
+              <td class="fw-semibold">
+                {{ getAgentName(schedule.agentId) }}
+              </td>
+
+              <td>{{ schedule.date | date:'MMM d, y' }}</td>
+
+              <td>{{ schedule.startTime }}</td>
+
+              <td>{{ schedule.endTime }}</td>
+
+              <td>
+                <div class="d-flex justify-content-center gap-2">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    (click)="editSchedule(schedule)"
+                    [disabled]="editingId !== null"
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger"
+                    (click)="deleteSchedule(schedule.id)"
+                    [disabled]="editingId !== null"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <tr *ngIf="schedules.length === 0">
+              <td colspan="5" class="text-center text-secondary py-5">
+                No schedules available. Create a schedule using the form above.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
