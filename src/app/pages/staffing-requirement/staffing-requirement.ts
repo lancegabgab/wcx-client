@@ -284,6 +284,17 @@ export class StaffingRequirement implements OnInit {
     });
   }
 
+  formatTime(time: string): string {
+    if (!time) return '';
+
+    const [hours, minutes] = time.split(':').map(Number);
+
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12;
+
+    return `${formattedHours}:${String(minutes).padStart(2, '0')} ${period}`;
+  }
+  
   getGap(item: StaffingRequirementModel): number {
     return item.scheduledAgents - item.requiredAgents;
   }

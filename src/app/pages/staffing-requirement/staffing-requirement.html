@@ -142,7 +142,7 @@
                 </ng-container>
 
                 <ng-template #startDisplay>
-                  {{ item.startTime }}
+                  {{ formatTime(item.startTime) }}
                 </ng-template>
               </td>
 
@@ -158,7 +158,7 @@
                 </ng-container>
 
                 <ng-template #endDisplay>
-                  {{ item.endTime }}
+                  {{ formatTime(item.endTime) }}
                 </ng-template>
               </td>
 
