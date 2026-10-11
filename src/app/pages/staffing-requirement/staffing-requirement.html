@@ -116,7 +116,7 @@
           <tbody>
             <tr *ngFor="let item of filteredStaffingRequirements">
 
-              <td>
+              <td class="text-center">
                 <ng-container *ngIf="editingId === item.id; else dateDisplay">
                   <input
                     type="date"
@@ -131,7 +131,7 @@
                 </ng-template>
               </td>
 
-              <td>
+              <td class="text-center">
                 <ng-container *ngIf="editingId === item.id; else startDisplay">
                   <input
                     type="time"
@@ -146,7 +146,7 @@
                 </ng-template>
               </td>
 
-              <td>
+              <td class="text-center">
                 <ng-container *ngIf="editingId === item.id; else endDisplay">
                   <input
                     type="time"
@@ -162,7 +162,7 @@
                 </ng-template>
               </td>
 
-              <td>
+              <td class="text-center">
                 <ng-container *ngIf="editingId === item.id; else requiredDisplay">
                   <input
                     type="number"
@@ -181,9 +181,9 @@
                 </ng-template>
               </td>
 
-              <td>{{ item.scheduledAgents }}</td>
+              <td class="text-center">{{ item.scheduledAgents }}</td>
               
-              <td>
+              <td class="text-center">
               <span
                 class="badge rounded-pill"
                 [ngClass]="{
@@ -196,7 +196,7 @@
               </span>
             </td>
 
-            <td>
+            <td class="text-center">
               <span
                 class="badge rounded-pill"
                 [ngClass]="{
