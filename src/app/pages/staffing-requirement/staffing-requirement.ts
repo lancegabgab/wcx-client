@@ -284,6 +284,37 @@ export class StaffingRequirement implements OnInit {
     });
   }
 
+  
+getEndTimeOptions(): string[] {
+  const options: string[] = [];
+
+  for (let minutes = 0; minutes < 24 * 60; minutes += 30) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+
+    options.push(
+      `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`
+    );
+  }
+
+  return options;
+}
+
+isEndTimeDisabled(
+  startTime: string,
+  endTime: string
+): boolean {
+  return !startTime || endTime <= startTime;
+}
+
+  onStartTimeChange(item: StaffingRequirementModel): void {
+    if (
+      item.endTime &&
+      item.endTime <= item.startTime
+    ) {
+      item.endTime = '';
+    }
+  }
   formatTime(time: string): string {
     if (!time) return '';
 
@@ -294,7 +325,7 @@ export class StaffingRequirement implements OnInit {
 
     return `${formattedHours}:${String(minutes).padStart(2, '0')} ${period}`;
   }
-  
+
   getGap(item: StaffingRequirementModel): number {
     return item.scheduledAgents - item.requiredAgents;
   }

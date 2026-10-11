@@ -147,14 +147,35 @@
               </td>
 
               <td class="text-center">
-                <ng-container *ngIf="editingId === item.id; else endDisplay">
+                 <ng-container *ngIf="editingId === item.id; else endDisplay">
+                  <!--
                   <input
                     type="time"
                     class="form-control form-control-sm time-input"
                     [(ngModel)]="item.endTime"
                     [min]="item.startTime"
                     required
-                  />
+                  /> 
+                -->
+                  
+                <select
+                  class="form-select"
+                  name="endTime"
+                  [(ngModel)]="item.endTime"
+                  [disabled]="!item.startTime || isSaving"
+                  required
+                >
+                  <option value="" disabled>Select end time</option>
+
+                  <option
+                    *ngFor="let time of getEndTimeOptions()"
+                    [value]="time"
+                    [disabled]="isEndTimeDisabled(item.startTime, time)"
+                  >
+                    {{ formatTime(time) }}
+                  </option>
+                </select>
+
                 </ng-container>
 
                 <ng-template #endDisplay>

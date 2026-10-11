@@ -1,301 +1,41 @@
-<!-- <div class="container-fluid py-4">
-
-  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-    <div>
-      <h2 class="fw-bold mb-1">Agent Scheduling</h2>
-      <p class="text-secondary mb-0">
-        Create and manage agent work schedules
-      </p>
-    </div>
+ <div class="container-fluid py-4">
+  <!-- Page Header -->
+  <div class="mb-4">
+    <h2 class="fw-bold mb-1">Agent Scheduling</h2>
+    <p class="text-secondary mb-0">
+      Create and manage agent work schedules
+    </p>
   </div>
 
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Filters -->
   <div class="card border-0 shadow-sm mb-4">
     <div class="card-body">
-      <h5 class="fw-semibold mb-3">Filter Schedules</h5>
-
       <div class="row g-3">
-
-        <div class="col-12 col-md-6 col-lg">
-        <label for="filterAgentId" class="form-label">Agent</label>
-
-        <select
-            id="filterAgentId"
-            class="form-select"
-            [(ngModel)]="filterAgentId"
-        >
-            <option value="">All Agents</option>
-
-            <option *ngFor="let agent of agents" [value]="agent.id">
-            {{ agent.firstName }}
-            {{ agent.middleName ? agent.middleName + ' ' : '' }}{{ agent.lastName }}
-            </option>
-        </select>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg">
-          <label for="dateFrom" class="form-label">Date From</label>
-          <input
-            id="dateFrom"
-            type="date"
-            class="form-control"
-            [(ngModel)]="dateFrom"
-          />
-        </div>
-
-        <div class="col-12 col-md-6 col-lg">
-          <label for="dateTo" class="form-label">Date To</label>
-          <input
-            id="dateTo"
-            type="date"
-            class="form-control"
-            [(ngModel)]="dateTo"
-            [min]="dateFrom || null"
-          />
-        </div>
-
-        <div class="col-12 col-md-6 col-lg">
-          <label for="timeFrom" class="form-label">Time From</label>
-          <input
-            id="timeFrom"
-            type="time"
-            class="form-control"
-            [(ngModel)]="timeFrom"
-          />
-        </div>
-
-        <div class="col-12 col-md-6 col-lg">
-          <label for="timeTo" class="form-label">Time To</label>
-          <input
-            id="timeTo"
-            type="time"
-            class="form-control"
-            [(ngModel)]="timeTo"
-            [min]="timeFrom || null"
-          />
-        </div>
-
-      </div>
-
-      <div *ngIf="filterError" class="alert alert-danger mt-3 mb-0">
-        {{ filterError }}
-      </div>
-
-      <div class="d-flex gap-2 mt-3">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="applyFilters()"
-        >
-          Apply Filters
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-outline-secondary"
-          (click)="resetFilters()"
-        >
-          Reset
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div class="card border-0 shadow-sm">
-    <div class="card-header bg-white py-3">
-      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <h5 class="fw-semibold mb-0">Schedule List</h5>
-            <button
-            type="button"
-            class="btn btn-primary"
-            (click)="addSchedule()"
-            [disabled]="editingId !== null"
-            >
-            <span class="me-1">+</span> New Schedule
-            </button>
-      </div>
-    </div>
-
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-
-          <thead class="table-light">
-            <tr>
-              <th>Agent</th>
-              <th>Date</th>
-              <th>Start Time</th>
-              <th>End Time</th>
-              <th class="text-center">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr *ngFor="let schedule of filteredSchedules">
-
-              <td>
-                <ng-container *ngIf="editingId === schedule.id; else agentDisplay">
-                  <select
-                    class="form-select form-select-sm"
-                    [(ngModel)]="schedule.agentId"
-                    required
-                  >
-                    <option value="">Select agent</option>
-                    <option *ngFor="let agent of agents" [value]="agent.id">
-                      {{ agent.name }}
-                    </option>
-                  </select>
-                </ng-container>
-
-                <ng-template #agentDisplay>
-                  <span class="fw-semibold">
-                    {{ getAgentName(schedule.agentId) }}
-                  </span>
-                </ng-template>
-              </td>
-
-              <td>
-                <ng-container *ngIf="editingId === schedule.id; else dateDisplay">
-                  <input
-                    type="date"
-                    class="form-control form-control-sm"
-                    [(ngModel)]="schedule.date"
-                    required
-                  />
-                </ng-container>
-
-                <ng-template #dateDisplay>
-                  {{ schedule.date | date:'MMM d, y' }}
-                </ng-template>
-              </td>
-
-              <td>
-                <ng-container *ngIf="editingId === schedule.id; else startDisplay">
-                  <input
-                    type="time"
-                    class="form-control form-control-sm"
-                    [(ngModel)]="schedule.startTime"
-                    [max]="schedule.endTime"
-                    required
-                  />
-                </ng-container>
-
-                <ng-template #startDisplay>
-                  {{ schedule.startTime }}
-                </ng-template>
-              </td>
-
-              <td>
-                <ng-container *ngIf="editingId === schedule.id; else endDisplay">
-                  <input
-                    type="time"
-                    class="form-control form-control-sm"
-                    [(ngModel)]="schedule.endTime"
-                    [min]="schedule.startTime"
-                    required
-                  />
-                </ng-container>
-
-                <ng-template #endDisplay>
-                  {{ schedule.endTime }}
-                </ng-template>
-              </td>
-
-              <td class="text-center">
-                <div class="d-flex justify-content-center gap-2">
-
-                  <ng-container *ngIf="editingId === schedule.id; else actionButtons">
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-success"
-                      (click)="saveSchedule(schedule)"
-                    >
-                      Save
-                    </button>
-
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-outline-secondary"
-                      (click)="cancelEdit()"
-                    >
-                      Cancel
-                    </button>
-                  </ng-container>
-
-                  <ng-template #actionButtons>
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-outline-primary"
-                      (click)="editSchedule(schedule)"
-                      [disabled]="editingId !== null"
-                    >
-                      Edit
-                    </button>
-
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-outline-danger"
-                      (click)="deleteSchedule(schedule.id)"
-                      [disabled]="editingId !== null"
-                    >
-                      Delete
-                    </button>
-                  </ng-template>
-
-                </div>
-              </td>
-
-            </tr>
-
-            <tr *ngIf="filteredSchedules.length === 0">
-              <td colspan="5" class="text-center text-secondary py-5">
-                No schedules match your filters.
-              </td>
-            </tr>
-
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-</div>  -->
-<div class="container-fluid py-4">
-
-  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-    <div>
-      <h2 class="fw-bold mb-1">Agent Scheduling</h2>
-      <p class="text-secondary mb-0">
-        Create and manage agent work schedules
-      </p>
-    </div>
-  </div>
-
-  <div class="card border-0 shadow-sm mb-4">
-    <div class="card-body">
-      <h5 class="fw-semibold mb-3">Filter Schedules</h5>
-
-      <div class="row g-3">
-
-        <div class="col-12 col-md-6 col-lg">
+        <!-- Agent Filter -->
+        <div class="col-12 col-md-6 col-lg-4">
           <label for="filterAgentId" class="form-label">Agent</label>
-
           <select
             id="filterAgentId"
             class="form-select"
             [(ngModel)]="filterAgentId"
           >
             <option value="">All Agents</option>
-
             <option *ngFor="let agent of agents" [value]="agent.id">
               {{ agent.firstName }}
-              {{ agent.middleName ? agent.middleName + ' ' : '' }}{{ agent.lastName }}
+              {{ agent.middleName }}
+              {{ agent.lastName }}
             </option>
           </select>
         </div>
 
-        <div class="col-12 col-md-6 col-lg">
+        <!-- Date From -->
+        <div class="col-12 col-md-6 col-lg-2">
           <label for="dateFrom" class="form-label">Date From</label>
-
           <input
             id="dateFrom"
             type="date"
@@ -304,21 +44,20 @@
           />
         </div>
 
-        <div class="col-12 col-md-6 col-lg">
+        <!-- Date To -->
+        <div class="col-12 col-md-6 col-lg-2">
           <label for="dateTo" class="form-label">Date To</label>
-
           <input
             id="dateTo"
             type="date"
             class="form-control"
             [(ngModel)]="dateTo"
-            [min]="dateFrom || null"
           />
         </div>
 
-        <div class="col-12 col-md-6 col-lg">
+        <!-- Time From -->
+        <div class="col-12 col-md-6 col-lg-2">
           <label for="timeFrom" class="form-label">Time From</label>
-
           <input
             id="timeFrom"
             type="time"
@@ -327,27 +66,24 @@
           />
         </div>
 
-        <div class="col-12 col-md-6 col-lg">
+        <!-- Time To -->
+        <div class="col-12 col-md-6 col-lg-2">
           <label for="timeTo" class="form-label">Time To</label>
-
           <input
             id="timeTo"
             type="time"
             class="form-control"
             [(ngModel)]="timeTo"
-            [min]="timeFrom || null"
           />
         </div>
-
       </div>
 
-      <div
-        *ngIf="filterError"
-        class="alert alert-danger mt-3 mb-0"
-      >
+      <!-- Filter Validation -->
+      <div *ngIf="filterError" class="alert alert-danger mt-3 mb-0">
         {{ filterError }}
       </div>
 
+      <!-- Filter Buttons -->
       <div class="d-flex gap-2 mt-3">
         <button
           type="button"
@@ -365,138 +101,180 @@
           Reset
         </button>
       </div>
-
     </div>
   </div>
 
+  <!-- Schedule Table -->
   <div class="card border-0 shadow-sm">
-
     <div class="card-header bg-white py-3">
-      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <h5 class="fw-semibold mb-0">Schedule List</h5>
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0">Schedules</h5>
 
         <button
           type="button"
           class="btn btn-primary"
           (click)="addSchedule()"
-          [disabled]="editingId !== null"
+          [disabled]="editingId !== null || isLoading || isSaving"
         >
-          <span class="me-1">+</span>
-          New Schedule
+          + New Schedule
         </button>
       </div>
     </div>
 
     <div class="card-body p-0">
       <div class="table-responsive">
-
         <table class="table table-hover align-middle mb-0">
-
           <thead class="table-light">
             <tr>
               <th>Agent</th>
               <th>Date</th>
               <th>Start Time</th>
               <th>End Time</th>
+              <th>Status</th>
               <th class="text-center">Actions</th>
             </tr>
           </thead>
 
           <tbody>
-
-            <tr *ngFor="let schedule of filteredSchedules">
-
+            <tr *ngFor="let item of filteredSchedules">
+              <!-- Agent -->
               <td>
                 <ng-container
-                  *ngIf="editingId === schedule.id; else agentDisplay"
+                  *ngIf="editingId === item.id; else agentDisplay"
                 >
                   <select
                     class="form-select form-select-sm"
-                    [(ngModel)]="schedule.agentId"
+                    [(ngModel)]="item.agentId"
                     required
                   >
-                    <option value="">Select agent</option>
-
-                    <option
-                      *ngFor="let agent of agents"
-                      [value]="agent.id"
-                    >
+                    <option value="">Select Agent</option>
+                    <option *ngFor="let agent of agents" [value]="agent.id">
                       {{ agent.firstName }}
-                      {{ agent.middleName ? agent.middleName + ' ' : '' }}{{ agent.lastName }}
+                      {{ agent.middleName }}
+                      {{ agent.lastName }}
                     </option>
                   </select>
                 </ng-container>
 
                 <ng-template #agentDisplay>
-                  <span class="fw-semibold">
-                    {{ getAgentName(schedule.agentId) }}
-                  </span>
+                  {{ getAgentName(item.agentId) }}
                 </ng-template>
               </td>
 
+              <!-- Date -->
               <td>
                 <ng-container
-                  *ngIf="editingId === schedule.id; else dateDisplay"
+                  *ngIf="editingId === item.id; else dateDisplay"
                 >
                   <input
                     type="date"
                     class="form-control form-control-sm"
-                    [(ngModel)]="schedule.date"
+                    [(ngModel)]="item.date"
                     required
                   />
                 </ng-container>
 
                 <ng-template #dateDisplay>
-                  {{ schedule.date | date:'MMM d, y' }}
+                  {{ item.date | date:'MMM d, y' }}
                 </ng-template>
               </td>
 
+              <!-- Start Time -->
               <td>
                 <ng-container
-                  *ngIf="editingId === schedule.id; else startDisplay"
+                  *ngIf="editingId === item.id; else startTimeDisplay"
                 >
                   <input
                     type="time"
                     class="form-control form-control-sm"
-                    [(ngModel)]="schedule.startTime"
-                    [max]="schedule.endTime"
+                    [(ngModel)]="item.startTime"
                     required
                   />
                 </ng-container>
 
-                <ng-template #startDisplay>
-                  {{ schedule.startTime }}
+                <ng-template #startTimeDisplay>
+                  {{ formatTime(item.startTime) }}
                 </ng-template>
               </td>
 
+              <!-- End Time -->
               <td>
                 <ng-container
-                  *ngIf="editingId === schedule.id; else endDisplay"
+                  *ngIf="editingId === item.id; else endTimeDisplay"
                 >
-                  <input
+                  <!-- <input
                     type="time"
                     class="form-control form-control-sm"
-                    [(ngModel)]="schedule.endTime"
-                    [min]="schedule.startTime"
+                    [(ngModel)]="item.endTime"
+                    [min]="item.startTime"
                     required
-                  />
+                  /> -->
+                  
+                    <select
+                    class="form-select"
+                    name="endTime"
+                    [(ngModel)]="item.endTime"
+                    [disabled]="!item.startTime || isSaving"
+                    required
+                    >
+                    <option value="" disabled>Select end time</option>
+
+                    <option
+                        *ngFor="let time of getEndTimeOptions()"
+                        [value]="time"
+                        [disabled]="isEndTimeDisabled(item.startTime, time)"
+                    >
+                        {{ formatTime(time) }}
+                    </option>
+                    </select>
+
                 </ng-container>
 
-                <ng-template #endDisplay>
-                  {{ schedule.endTime }}
+                <ng-template #endTimeDisplay>
+                  {{ formatTime(item.endTime) }}
                 </ng-template>
               </td>
 
-              <td class="text-center">
-                <div class="d-flex justify-content-center gap-2 flex-wrap">
+              <!-- Status -->
+              <td>
+                <ng-container
+                  *ngIf="editingId === item.id; else statusDisplay"
+                >
+                  <select
+                    class="form-select form-select-sm"
+                    [(ngModel)]="item.status"
+                  >
+                    <option value="Scheduled">Scheduled</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+                </ng-container>
 
+                <ng-template #statusDisplay>
+                  <span
+                    class="badge rounded-pill"
+                    [ngClass]="{
+                      'text-bg-primary': item.status === 'Scheduled',
+                      'text-bg-success': item.status === 'Completed',
+                      'text-bg-secondary': item.status === 'Cancelled'
+                    }"
+                  >
+                    {{ item.status }}
+                  </span>
+                </ng-template>
+              </td>
+
+              <!-- Actions -->
+              <td>
+                <div class="d-flex justify-content-center gap-2">
                   <ng-container
-                    *ngIf="editingId === schedule.id; else actionButtons"
+                    *ngIf="editingId === item.id; else normalActions"
                   >
                     <button
                       type="button"
                       class="btn btn-sm btn-success"
-                      (click)="saveSchedule(schedule)"
+                      (click)="saveSchedule(item)"
+                      [disabled]="isSaving"
                     >
                       Save
                     </button>
@@ -504,18 +282,19 @@
                     <button
                       type="button"
                       class="btn btn-sm btn-outline-secondary"
-                      (click)="cancelEdit()"
+                      (click)="cancelEdit(item)"
+                      [disabled]="isSaving"
                     >
                       Cancel
                     </button>
                   </ng-container>
 
-                  <ng-template #actionButtons>
+                  <ng-template #normalActions>
                     <button
                       type="button"
                       class="btn btn-sm btn-outline-primary"
-                      (click)="editSchedule(schedule)"
-                      [disabled]="editingId !== null"
+                      (click)="editSchedule(item)"
+                      [disabled]="editingId !== null || isDeleting"
                     >
                       Edit
                     </button>
@@ -523,31 +302,32 @@
                     <button
                       type="button"
                       class="btn btn-sm btn-outline-danger"
-                      (click)="deleteSchedule(schedule.id)"
-                      [disabled]="editingId !== null"
+                      (click)="deleteSchedule(item.id)"
+                      [disabled]="editingId !== null || isDeleting"
                     >
                       Delete
                     </button>
                   </ng-template>
-
                 </div>
               </td>
-
             </tr>
 
-            <tr *ngIf="filteredSchedules.length === 0">
-              <td colspan="5" class="text-center text-secondary py-5">
-                No schedules match your filters.
+            <!-- Loading -->
+            <tr *ngIf="isLoading">
+              <td colspan="6" class="text-center py-4 text-secondary">
+                Loading schedules...
               </td>
             </tr>
 
+            <!-- Empty State -->
+            <tr *ngIf="!isLoading && filteredSchedules.length === 0">
+              <td colspan="6" class="text-center py-5 text-secondary">
+                No schedules found.
+              </td>
+            </tr>
           </tbody>
-
         </table>
-
       </div>
     </div>
-
   </div>
-
 </div>
