@@ -4,8 +4,9 @@ import { Login } from './pages/login/login';
 import { Register } from './pages/register/register';
 import { Profile } from './pages/profile/profile';
 import { Agents } from './pages/agents/agents';
-import { Staffing } from './pages/staffing/staffing';
 import { Overview } from './pages/overview/overview';
+import { StaffingRequirement } from './pages/staffing-requirement/staffing-requirement';
+import { Scheduling } from './pages/scheduling/scheduling';
 
 export const routes: Routes = [
     {
@@ -16,9 +17,17 @@ export const routes: Routes = [
         path: 'overview',
         component: Overview
     },
+    {   
+        path: 'scheduling', 
+        component: Scheduling 
+    },
+    {
+        path: 'staffing',
+        component: StaffingRequirement
+    },
     {
         path: 'requirements',
-        component: Staffing
+        component: StaffingRequirement
     },
     {
         path: 'agents',

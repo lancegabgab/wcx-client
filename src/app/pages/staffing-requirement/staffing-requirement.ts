@@ -19,7 +19,7 @@ interface StaffingRow {
   templateUrl: './staffing-requirement.html',
   styleUrl: './staffing-requirement.css'
 })
-export class StaffingRequirementComponent {
+export class StaffingRequirement {
   staffingRequirements: StaffingRow[] = [
     {
       id: 1,
