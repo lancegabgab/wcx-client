@@ -1,12 +1,3 @@
-// import { Component } from '@angular/core';
-
-// @Component({
-//   selector: 'app-scheduling',
-//   imports: [],
-//   templateUrl: './scheduling.html',
-//   styleUrl: './scheduling.css',
-// })
-// export class Scheduling {}
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -55,13 +46,27 @@ export class Scheduling {
     }
   ];
 
-  form: Schedule = this.emptyForm();
+  filteredSchedules: Schedule[] = [];
+
+  filterAgentId = '';
+  dateFrom = '';
+  dateTo = '';
+  timeFrom = '';
+  timeTo = '';
+  filterError = '';
+
   editingId: number | null = null;
   originalSchedule: Schedule | null = null;
+  isAdding = false;
+
   errorMessage = '';
   successMessage = '';
 
-  private emptyForm(): Schedule {
+  constructor() {
+    this.applyFilters();
+  }
+
+  private createEmptySchedule(): Schedule {
     return {
       id: 0,
       agentId: '',
@@ -71,36 +76,124 @@ export class Scheduling {
     };
   }
 
-  submitSchedule(): void {
+  applyFilters(): void {
+    this.filterError = '';
+
+    if (this.dateFrom && this.dateTo && this.dateFrom > this.dateTo) {
+      this.filterError = 'Date From cannot be later than Date To.';
+      return;
+    }
+
+    if (this.timeFrom && this.timeTo && this.timeFrom >= this.timeTo) {
+      this.filterError = 'Time From must be earlier than Time To.';
+      return;
+    }
+
+    this.filteredSchedules = this.schedules.filter(schedule => {
+      const matchesAgent =
+        !this.filterAgentId || schedule.agentId === this.filterAgentId;
+
+      const matchesDateFrom =
+        !this.dateFrom || schedule.date >= this.dateFrom;
+
+      const matchesDateTo =
+        !this.dateTo || schedule.date <= this.dateTo;
+
+      const matchesTimeFrom =
+        !this.timeFrom || schedule.endTime > this.timeFrom;
+
+      const matchesTimeTo =
+        !this.timeTo || schedule.startTime < this.timeTo;
+
+      return (
+        matchesAgent &&
+        matchesDateFrom &&
+        matchesDateTo &&
+        matchesTimeFrom &&
+        matchesTimeTo
+      );
+    });
+  }
+
+  resetFilters(): void {
+    this.filterAgentId = '';
+    this.dateFrom = '';
+    this.dateTo = '';
+    this.timeFrom = '';
+    this.timeTo = '';
+    this.filterError = '';
+
+    this.applyFilters();
+  }
+
+  addSchedule(): void {
+    if (this.editingId !== null) {
+      return;
+    }
+
+    const newId =
+      Math.max(0, ...this.schedules.map(schedule => schedule.id)) + 1;
+
+    const newSchedule: Schedule = {
+      ...this.createEmptySchedule(),
+      id: newId
+    };
+
+    this.schedules.unshift(newSchedule);
+
+    // Show the new row even when existing filters are active.
+    this.resetFilters();
+
+    this.editingId = newId;
+    this.originalSchedule = null;
+    this.isAdding = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+  }
+
+  editSchedule(schedule: Schedule): void {
+    if (this.editingId !== null) {
+      return;
+    }
+
+    this.editingId = schedule.id;
+    this.originalSchedule = { ...schedule };
+    this.isAdding = false;
+
+    this.errorMessage = '';
+    this.successMessage = '';
+  }
+
+  saveSchedule(schedule: Schedule): void {
     this.errorMessage = '';
     this.successMessage = '';
 
     if (
-      !this.form.agentId ||
-      !this.form.date ||
-      !this.form.startTime ||
-      !this.form.endTime
+      !schedule.agentId ||
+      !schedule.date ||
+      !schedule.startTime ||
+      !schedule.endTime
     ) {
       this.errorMessage = 'Please complete all fields.';
       return;
     }
 
-    if (this.form.startTime >= this.form.endTime) {
+    if (schedule.startTime >= schedule.endTime) {
       this.errorMessage = 'Start Time must be earlier than End Time.';
       return;
     }
 
-    const hasOverlap = this.schedules.some(schedule => {
-      if (schedule.id === this.editingId) {
+    const hasOverlap = this.schedules.some(existing => {
+      if (existing.id === schedule.id) {
         return false;
       }
 
-      const sameAgent = schedule.agentId === this.form.agentId;
-      const sameDate = schedule.date === this.form.date;
+      const sameAgent = existing.agentId === schedule.agentId;
+      const sameDate = existing.date === schedule.date;
 
       const overlaps =
-        this.form.startTime < schedule.endTime &&
-        this.form.endTime > schedule.startTime;
+        schedule.startTime < existing.endTime &&
+        schedule.endTime > existing.startTime;
 
       return sameAgent && sameDate && overlaps;
     });
@@ -111,44 +204,36 @@ export class Scheduling {
       return;
     }
 
-    if (this.editingId !== null) {
+    this.editingId = null;
+    this.originalSchedule = null;
+    this.isAdding = false;
+
+    this.successMessage = 'Schedule saved successfully.';
+    this.applyFilters();
+  }
+
+  cancelEdit(): void {
+    if (this.isAdding && this.editingId !== null) {
+      this.schedules = this.schedules.filter(
+        schedule => schedule.id !== this.editingId
+      );
+    } else if (this.originalSchedule && this.editingId !== null) {
       const index = this.schedules.findIndex(
         schedule => schedule.id === this.editingId
       );
 
       if (index !== -1) {
-        this.schedules[index] = { ...this.form, id: this.editingId };
+        this.schedules[index] = { ...this.originalSchedule };
       }
-
-      this.successMessage = 'Schedule updated successfully.';
-    } else {
-      const newId =
-        Math.max(0, ...this.schedules.map(schedule => schedule.id)) + 1;
-
-      this.schedules.unshift({ ...this.form, id: newId });
-      this.successMessage = 'Schedule added successfully.';
     }
 
-    this.cancelEdit(false);
-  }
-
-  editSchedule(schedule: Schedule): void {
-    this.editingId = schedule.id;
-    this.originalSchedule = { ...schedule };
-    this.form = { ...schedule };
-    this.errorMessage = '';
-    this.successMessage = '';
-  }
-
-  cancelEdit(clearMessages = true): void {
     this.editingId = null;
     this.originalSchedule = null;
-    this.form = this.emptyForm();
+    this.isAdding = false;
+    this.errorMessage = '';
+    this.successMessage = '';
 
-    if (clearMessages) {
-      this.errorMessage = '';
-      this.successMessage = '';
-    }
+    this.applyFilters();
   }
 
   deleteSchedule(id: number): void {
@@ -156,14 +241,14 @@ export class Scheduling {
       return;
     }
 
-    this.schedules = this.schedules.filter(schedule => schedule.id !== id);
-
-    if (this.editingId === id) {
-      this.cancelEdit();
-    }
+    this.schedules = this.schedules.filter(
+      schedule => schedule.id !== id
+    );
 
     this.successMessage = 'Schedule deleted successfully.';
     this.errorMessage = '';
+
+    this.applyFilters();
   }
 
   getAgentName(agentId: string): string {
