@@ -7,6 +7,7 @@ import { Agents } from './pages/agents/agents';
 import { Overview } from './pages/overview/overview';
 import { StaffingRequirement } from './pages/staffing-requirement/staffing-requirement';
 import { Scheduling } from './pages/scheduling/scheduling';
+import { YourSchedulesComponent } from './pages/your-schedules/your-schedules';
 
 export const routes: Routes = [
     {
@@ -44,5 +45,9 @@ export const routes: Routes = [
     {
         path: 'profile',
         component: Profile
+    },
+    {
+        path: 'my-schedules',
+        component: YourSchedulesComponent 
     },
 ];
